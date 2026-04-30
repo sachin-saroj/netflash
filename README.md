@@ -1,12 +1,10 @@
-# NETflash — AI-Powered Product Intelligence Platform
+# NETflash — AI Product Intelligence Platform
 
 <div align="center">
 
 ![NETflash Home](./screenshots/01_home.png)
 
-**Don't trust the reviews. Trust the data.**
-
-*Fake review detection. Real price comparison. YouTube reviewer analysis. In seconds.*
+**An AI-driven e-commerce analytics tool designed to evaluate review authenticity, track price volatility, and generate structured purchasing insights.**
 
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=node.js)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
@@ -17,155 +15,118 @@
 
 ---
 
-## What is NETflash?
+## 📌 Overview
 
-NETflash is an advanced, AI-powered e-commerce analysis platform that protects buyers from fake reviews and overpriced products on Amazon, Flipkart, and Meesho.
+NETflash addresses the growing challenge of information asymmetry in e-commerce. By leveraging Large Language Models (LLMs), the platform aggregates unstructured review data from major marketplaces (Amazon, Flipkart, Meesho) and transforms it into structured, quantifiable intelligence. 
 
-Unlike basic review checkers, NETflash uses **Google's Gemini AI** to perform deep linguistic analysis on hundreds of reviews simultaneously — detecting suspicious patterns, evaluating seller reputation, and generating actionable buying intelligence.
-
----
-
-## Features
-
-### Review Radar & Fake Review Detection
-Analyzes linguistic patterns across reviews to determine the percentage of genuine vs. suspicious vs. incentivized reviews. Detects burst posting patterns, generic language, and unverified reviewers.
-
-### 30-Day Price Volatility Chart
-A responsive area chart tracking the product's price fluctuations over 30 days, helping users identify whether the current price represents a genuine deal or an inflated "sale."
-
-### Deep-Dive AI Intel
-Generates structured breakdown of Build Quality, Value for Money, and Performance based purely on genuine user feedback. Identifies the ideal target audience for the product.
-
-### Scam Seller Detection
-Dedicated Trust Score evaluating the seller's return policies, shipping history, and known red flags. Risk levels: Safe / Caution / Avoid.
-
-### Smart Alternatives Engine
-Automatically suggests 2-3 better-rated or cheaper alternatives with specific reasons why they outperform the analyzed product.
-
-### Watchlist & Price Tracking
-Secure JWT-based authentication allows users to save products to a personalized dashboard and track price changes over time.
+This project demonstrates full-stack proficiency, API integration, prompt engineering, and modern UI/UX principles.
 
 ---
 
-## Dashboard Preview
+## ✨ Core Features
 
-### AI Intelligence Dashboard
+* **Authenticity Scoring (Review Radar):** Utilizes Google's Gemini AI to analyze linguistic patterns across review datasets, flagging potential burst-posting anomalies and incentivized reviews.
+* **Time-Series Price Tracking:** Visualizes 30-day price volatility using responsive area charts, providing historical context to current valuations.
+* **Structured Intelligence Extraction:** Processes raw text to isolate recurring genuine complaints, verified positives, and outputs a normalized Trust Score.
+* **Cross-Platform Price Aggregation:** Queries multiple marketplaces simultaneously to identify the most cost-effective purchasing option.
+* **User Retention Engine:** Implements secure JWT-based authentication, allowing users to persist analyzed products to a personal MongoDB-backed Watchlist.
+
+---
+
+## 📸 Interface & Workflow
+
+### Intelligence Dashboard
 ![Dashboard Top](./screenshots/02_dashboard_top.png)
-*Real-time Trust Score (6.8/10), Review Radar showing 28% suspicious reviews, AI Verdict recommending "BUY with caution", 30-day price chart, and Seller Reputation assessment for boAt Rockerz 450.*
+*Displays the calculated Trust Score, Review Radar metrics, and the synthesized AI Verdict based on the aggregated dataset.*
 
-### Deep-Dive Intel & Review Analysis
+### Deep-Dive Analytics
 ![Dashboard Middle](./screenshots/03_dashboard_middle.png)
-*Structured AI analysis: Build Quality (Average), Value for Money (Excellent), Performance metrics. Red flags detected including review burst patterns and unverified reviewers. Genuine complaints about ear cushion heating and mic quality.*
+*Categorical breakdown of Build Quality, Value, and Performance alongside the 30-day price volatility chart.*
 
-### Smart Alternatives & Review Breakdown
+### Actionable Insights
 ![Dashboard Bottom](./screenshots/04_dashboard_bottom.png)
-*AI-generated alternatives (JBL Tune 510BT for better vocals, Sony WH-CH520 for battery life). What real buyers liked: bass response, 12-15 hour battery, foldable design.*
+*Presents isolated consumer complaints and dynamic, AI-suggested product alternatives.*
 
 ---
 
-## Tech Stack
+## 🛠️ Technology Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 18, Vite, React Router DOM, Recharts |
-| **Styling** | Vanilla CSS (Dark Mode, CSS Grid, Custom Design System) |
-| **Backend** | Node.js, Express.js |
-| **Database** | MongoDB Atlas, Mongoose ODM |
-| **AI Engine** | Google Gemini AI (Generative AI SDK) |
-| **Auth** | JWT, bcryptjs |
-| **Data Sources** | RapidAPI (Amazon, Flipkart, Meesho scrapers) |
-| **Screenshots** | Puppeteer (automated capture pipeline) |
+| Architecture Layer | Technologies Utilized |
+|-------------------|----------------------|
+| **Client / Frontend** | React 18, Vite, React Router DOM, Recharts, Custom CSS Modules |
+| **Server / API** | Node.js, Express.js, RESTful Architecture |
+| **Data Persistence** | MongoDB Atlas, Mongoose ODM |
+| **AI / Machine Learning** | Google Generative AI SDK (Gemini Pro) |
+| **Authentication & Security**| JSON Web Tokens (JWT), bcryptjs |
+| **External Integrations** | RapidAPI Scrapers (Amazon, Flipkart, Meesho) |
 
 ---
 
-## Architecture Highlights
+## 🧠 Engineering Challenges Solved
 
-- **Mock Fallback Engine:** If live e-commerce API scrapers fail (free-tier limits), the system silently generates realistic mock data. This ensures flawless demo presentations regardless of external API status.
-- **DB-less Graceful Degradation:** If MongoDB is unreachable (IP restrictions), the backend bypasses caching and continues serving live AI analysis. The core product never crashes.
-- **Structured AI Output:** Gemini responses are parsed as structured JSON with schema validation, enabling type-safe rendering of complex metrics across the frontend.
+Building NETflash required addressing several technical hurdles common in data-aggregation platforms:
+
+1. **Unpredictable API Limits (Rate Limiting):** 
+   Implemented a **Mock Data Fallback Engine**. If external scraper APIs fail due to rate limits or region blocks (common with free-tier RapidAPI keys), the system gracefully catches the error and serves realistic, localized mock data. This guarantees 100% uptime for portfolio demonstrations.
+2. **LLM Output Instability:** 
+   Raw LLM outputs are notoriously unstructured. Designed strict JSON-schema prompts for Gemini AI, coupled with server-side validation, ensuring the frontend always receives predictable, render-safe data structures.
+3. **Database Dependency Failures:** 
+   Engineered the Express backend to support a "DB-less Graceful Degradation" mode. If MongoDB Atlas blocks the connection (e.g., due to dynamic IP changes), the core analysis features bypass caching and continue to function seamlessly.
 
 ---
 
-## Running Locally
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js v18+
-- MongoDB Atlas Account
+- Node.js (v18 or higher)
+- MongoDB Atlas Cluster (Ensure your IP `0.0.0.0/0` is whitelisted)
 - Google Gemini API Key
-- RapidAPI Account (subscribe to Amazon, Flipkart, Meesho APIs — all free tier)
 
-### Backend Setup
+### Local Installation
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/yourusername/netflash.git
+cd netflash
+```
+
+**2. Configure the Backend**
 ```bash
 cd backend
 npm install
 ```
-
-Create `.env` in the `backend` directory:
+Rename `.env.example` to `.env` and inject your credentials:
 ```env
 PORT=5000
 MONGODB_URI=your_mongodb_connection_string
 GEMINI_API_KEY=your_gemini_api_key
 RAPIDAPI_KEY=your_rapidapi_key
-YOUTUBE_API_KEY=your_youtube_api_key
 ```
-
+Start the backend server:
 ```bash
 node index.js
 ```
 
-### Frontend Setup
+**3. Configure the Frontend**
+Open a new terminal window:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-
-Open `http://localhost:5173` in your browser.
-
----
-
-## Project Structure
-```
-netflash/
-├── backend/
-│   ├── index.js              # Express server entry point
-│   ├── routes/
-│   │   ├── analyze.js        # Core AI analysis endpoint
-│   │   ├── price.js          # Cross-platform price comparison
-│   │   ├── auth.js           # User registration & login (JWT)
-│   │   ├── watchlist.js      # Saved products CRUD
-│   │   └── youtube.js        # YouTube review aggregation
-│   ├── services/
-│   │   ├── gemini.js         # Gemini AI integration
-│   │   ├── amazon.js         # Amazon scraper + fallback
-│   │   ├── flipkart.js       # Flipkart scraper + fallback
-│   │   └── meesho.js         # Meesho scraper + fallback
-│   ├── models/               # MongoDB schemas
-│   ├── middleware/            # JWT auth middleware
-│   └── utils/                # Logger, mock data engine
-├── frontend/
-│   ├── src/
-│   │   ├── pages/
-│   │   │   ├── Home.jsx      # Landing page
-│   │   │   ├── Results.jsx   # Analysis dashboard
-│   │   │   └── Dashboard.jsx # Watchlist page
-│   │   ├── components/
-│   │   │   ├── PriceHistoryChart.jsx
-│   │   │   ├── SellerTrustCard.jsx
-│   │   │   ├── AlternativesList.jsx
-│   │   │   ├── ProductSummaryCard.jsx
-│   │   │   ├── TrustScoreCard.jsx
-│   │   │   ├── ReviewBreakdown.jsx
-│   │   │   ├── AuthModal.jsx
-│   │   │   └── ...
-│   │   └── index.css         # Complete design system
-│   └── package.json
-├── screenshots/              # Auto-generated via Puppeteer
-└── README.md
-```
+Navigate to `http://localhost:5173` to interact with the platform.
 
 ---
 
-## License
+## 🗺️ Future Roadmap
 
-MIT License — Free to use and modify.
+- [ ] **Background Price Polling:** Implement cron jobs (`node-cron` or `BullMQ`) to alert users when items in their Watchlist drop in price.
+- [ ] **Enhanced Visualizations:** Transition from mock historical price data to persistent data logging for true long-term price tracking.
+- [ ] **Browser Extension Integration:** Build a companion Chrome extension to overlay NETflash Trust Scores directly on Amazon/Flipkart product pages.
+- [ ] **Redis Caching:** Introduce Redis to cache frequent AI analysis results, reducing latency and LLM token costs.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - feel free to use it for your own portfolio or educational purposes.
