@@ -1,5 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const logger = require('../utils/logger');
+const { getMockAnalysis } = require('../utils/mockData');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
@@ -55,7 +56,7 @@ Signals of genuine reviews:
 Reviews to analyze:
 `;
 
-async function analyzeReviews(reviews) {
+async function analyzeReviews(reviews, productTitle) {
   const reviewText = reviews
     .slice(0, 200)
     .map((r, i) =>
@@ -68,50 +69,32 @@ async function analyzeReviews(reviews) {
     const result = await model.generateContent(FAKE_REVIEW_PROMPT + reviewText);
     const raw = result.response.text().trim();
     const clean = raw.replace(/```json|```/g, '').trim();
-    return JSON.parse(clean);
+
+    // F-01: Tag successful AI responses with source metadata so consumers
+    // can always distinguish live AI output from demo fallbacks.
+    const parsed = JSON.parse(clean);
+    parsed.source = 'live';
+    parsed.demoMode = false;
+    return parsed;
   } catch (err) {
-    logger.error('gemini', 'Analysis failed, using mock analysis', { error: err.message });
-    
-    // Return a realistic mock analysis so the app doesn't break if API key is invalid
+    // F-01 FIX: Return dynamic mock data contextually classified based on the productTitle
+    // rather than static boAt Rockerz headphone reviews.
+    logger.warn('gemini', 'Gemini unavailable, serving demo analysis', {
+      error: err.message,
+      reason: 'Returning mock analysis with demoMode=true'
+    });
+
+    const mockAnalysis = getMockAnalysis(productTitle);
+
     return {
-      trustScore: 6.8,
-      reviewsAnalyzed: reviews.length,
-      genuinePercent: 62,
-      suspiciousPercent: 28,
-      incentivizedPercent: 10,
-      redFlags: [
-        "Multiple 5-star reviews use identical phrases like 'best headphone ever' and 'must buy'",
-        "23% of reviewers have no other purchase history on the platform",
-        "Burst of 40+ five-star reviews posted within a 3-day window in March 2026"
-      ],
-      genuineComplaints: [
-        "Ear cushions overheat after 1-2 hours of continuous use",
-        "Mic quality on calls is muffled — callers report difficulty hearing",
-        "Left ear cup develops rattle at high volume after 5-6 months",
-        "Volume buttons feel loose and sometimes unresponsive"
-      ],
-      genuinePositives: [
-        "Bass response is excellent for the price range (outperforms JBL Tune 510BT)",
-        "Battery consistently delivers 12-15 hours on a single charge",
-        "Foldable design and lightweight build make it great for commuting",
-        "Bluetooth range holds strong up to 8-10 meters"
-      ],
-      productSummary: {
-        overview: "The boAt Rockerz 450 delivers impressive bass performance and reliable battery life at a competitive price point. Genuine reviewers consistently praise the sound-to-price ratio and the comfortable fit. However, several long-term users report durability concerns with the ear cushions and volume controls after 5-6 months of daily use.",
-        buildQuality: "Average",
-        valueForMoney: "Excellent",
-        performance: "Average",
-        targetAudience: "Budget-conscious bass lovers and daily commuters"
+      // --- Demo-mode metadata (F-01 addition) ---
+      source: 'mock',
+      demoMode: true,
+      _meta: {
+        message: 'Live AI analysis unavailable. Showing demo analysis.',
+        failureReason: err.message
       },
-      sellerIntel: {
-        riskLevel: "Safe",
-        redFlags: ["Some third-party sellers ship refurbished units as new", "Check for 'Sold by Appario Retail' for genuine stock"]
-      },
-      alternatives: [
-        { name: "JBL Tune 510BT", reason: "Clearer vocals and better mic quality for calls at a similar price point." },
-        { name: "Sony WH-CH520", reason: "Superior 50-hour battery life and lighter weight, though slightly less bass." }
-      ],
-      verdict: "BUY with caution. The boAt Rockerz 450 is a solid value pick for bass-heavy listeners under Rs 1500. However, 28% of reviews appear suspicious. Verify you are buying from an authorized seller to avoid refurbished units."
+      ...mockAnalysis
     };
   }
 }

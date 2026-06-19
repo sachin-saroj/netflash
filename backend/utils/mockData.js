@@ -129,22 +129,202 @@ function getMockProductDetails(platform, productId) {
 }
 
 /**
- * Provides mock price data for cross-platform comparison
+ * Provides mock price data for cross-platform comparison.
+ * Uses the actual productTitle to keep consistency across platforms.
  */
-function getMockPrice(platform, sourcePrice) {
+function getMockPrice(platform, sourcePrice, productTitle) {
   const variance = sourcePrice * 0.15;
   const mockPrice = Math.round(sourcePrice + (Math.random() * variance * 2 - variance));
+  
+  let title = productTitle || '';
+  if (!title) {
+    title = platform === 'amazon' ? 'Amazon Product'
+         : platform === 'flipkart' ? 'Flipkart Product'
+         : 'Meesho Product';
+  } else {
+    if (title.length > 80) {
+      title = title.slice(0, 80) + '...';
+    }
+  }
+
+  const query = encodeURIComponent(title.replace(/\(.*?\)/g, '').trim());
+  const domain = platform === 'amazon' ? '.in' : '.com';
   
   return {
     platform,
     price: mockPrice,
     mrp: Math.round(mockPrice * 1.2),
-    title: platform === 'amazon' ? 'boAt Rockerz 450 Bluetooth Headphones'
-         : platform === 'flipkart' ? 'boAt Rockerz 450 On-Ear Headphone'
-         : 'boAt Rockerz 450 Wireless Headset',
-    url: 'https://www.' + platform + (platform === 'amazon' ? '.in' : '.com') + '/search?q=boat+rockerz+450',
+    title: title,
+    url: `https://www.${platform}${domain}/search?q=${query}`,
     available: true
   };
 }
 
-module.exports = { getMockProductDetails, getMockPrice, generateMockReviews };
+/**
+ * Classifies the search query/title and returns context-appropriate mock AI reviews analysis.
+ */
+function getMockAnalysis(productTitle = '') {
+  const title = productTitle.toLowerCase();
+  
+  if (title.includes('laptop') || title.includes('vivobook') || title.includes('asus') || title.includes('computer') || title.includes('ssd') || title.includes('intel') || title.includes('core') || title.includes('macbook')) {
+    // Laptop-specific mock analysis
+    return {
+      trustScore: 7.2,
+      reviewsAnalyzed: 45,
+      genuinePercent: 78,
+      suspiciousPercent: 15,
+      incentivizedPercent: 7,
+      redFlags: [
+        "Multiple review accounts created on the same day posting positive ratings",
+        "Unusually high mention of official marketing slogans in 5-star reviews",
+      ],
+      genuineComplaints: [
+        "Battery life is shorter than advertised (approx 4-5 hours under load)",
+        "Fan noise becomes loud during heavy software usage",
+        "Screen color accuracy is average, not ideal for professional design work",
+      ],
+      genuinePositives: [
+        "High performance with the SSD boot time and multitasking speed",
+        "Lightweight and portable thin-and-light chassis",
+        "Comfortable keyboard and precise touchpad feedback",
+      ],
+      productSummary: {
+        overview: "The laptop offers reliable performance for multitasking, office work, and casual use, backed by fast boot times. However, battery backup and color accuracy are common drawbacks noted by long-term users.",
+        buildQuality: "Average",
+        valueForMoney: "Excellent",
+        performance: "Excellent",
+        targetAudience: "Students, programmers, and office professionals"
+      },
+      sellerIntel: {
+        riskLevel: "Safe",
+        redFlags: []
+      },
+      alternatives: [
+        { name: "HP 15s", reason: "Slightly better battery life and integrated graphics performance." },
+        { name: "Lenovo IdeaPad Slim 3", reason: "Equipped with a physical camera shutter and robust hinge design." }
+      ],
+      verdict: "BUY. A strong mid-range contender that delivers great performance for the price, though you should keep a charger handy."
+    };
+  } else if (title.includes('dress') || title.includes('maxi') || title.includes('printed') || title.includes('fabric') || title.includes('rayon') || title.includes('women') || title.includes('clothing') || title.includes('wear') || title.includes('sari') || title.includes('kurti')) {
+    // Dress/Clothing-specific mock analysis
+    return {
+      trustScore: 5.9,
+      reviewsAnalyzed: 32,
+      genuinePercent: 55,
+      suspiciousPercent: 30,
+      incentivizedPercent: 15,
+      redFlags: [
+        "Highly repetitive praise like 'beautiful dress' with no size details",
+        "Several reviews posted in a short 24-hour burst window",
+      ],
+      genuineComplaints: [
+        "Material is thinner than expected and slightly transparent in bright light",
+        "Stitching details near the seams and collar are uneven in places",
+        "Size chart is inaccurate, fits smaller than expected",
+      ],
+      genuinePositives: [
+        "Attractive floral prints and color match the product photo exactly",
+        "Comfortable, breathable rayon material suitable for warm weather",
+        "Good value for casual wear at this budget pricing",
+      ],
+      productSummary: {
+        overview: "An attractive casual dress option that matches the pictures visually. The fabric is light and breathable, though quality control on stitching and size accuracy could be improved.",
+        buildQuality: "Poor",
+        valueForMoney: "Average",
+        performance: "Average",
+        targetAudience: "Casual day wear and budget fashion shoppers"
+      },
+      sellerIntel: {
+        riskLevel: "Caution",
+        redFlags: ["Multiple returns registered for size fitting issues"]
+      },
+      alternatives: [
+        { name: "A-Line Georgette Midi Dress", reason: "Features lining fabric and reinforced double stitching." },
+        { name: "Cotton Blend Flared Kurta", reason: "Standard regional sizing accuracy and pre-shrunk cotton fabric." }
+      ],
+      verdict: "WAIT. Consider ordering one size larger than your usual to account for fitting issues, and inspect the seams on arrival."
+    };
+  } else if (title.includes('headphone') || title.includes('earphone') || title.includes('boat') || title.includes('rockerz') || title.includes('bluetooth') || title.includes('audio') || title.includes('sound') || title.includes('speaker') || title.includes('buds')) {
+    // Audio/Headphone-specific mock analysis (Original boAt default)
+    return {
+      trustScore: 6.8,
+      reviewsAnalyzed: 120,
+      genuinePercent: 62,
+      suspiciousPercent: 28,
+      incentivizedPercent: 10,
+      redFlags: [
+        "Multiple 5-star reviews use identical phrases like 'best headphone ever' and 'must buy'",
+        "23% of reviewers have no other purchase history on the platform",
+        "Burst of 40+ five-star reviews posted within a 3-day window in March 2026"
+      ],
+      genuineComplaints: [
+        "Ear cushions overheat after 1-2 hours of continuous use",
+        "Mic quality on calls is muffled — callers report difficulty hearing",
+        "Left ear cup develops rattle at high volume after 5-6 months",
+        "Volume buttons feel loose and sometimes unresponsive"
+      ],
+      genuinePositives: [
+        "Bass response is excellent for the price range (outperforms JBL Tune 510BT)",
+        "Battery consistently delivers 12-15 hours on a single charge",
+        "Foldable design and lightweight build make it great for commuting",
+        "Bluetooth range holds strong up to 8-10 meters"
+      ],
+      productSummary: {
+        overview: "The audio device delivers impressive bass performance and reliable battery life at a competitive price point. Genuine reviewers consistently praise the sound-to-price ratio and the comfortable fit. However, several long-term users report durability concerns with daily use.",
+        buildQuality: "Average",
+        valueForMoney: "Excellent",
+        performance: "Average",
+        targetAudience: "Budget-conscious bass lovers and daily commuters"
+      },
+      sellerIntel: {
+        riskLevel: "Safe",
+        redFlags: ["Some third-party sellers ship refurbished units as new", "Check for authorized seller for genuine stock"]
+      },
+      alternatives: [
+        { name: "JBL Tune 510BT", reason: "Clearer vocals and better mic quality for calls at a similar price point." },
+        { name: "Sony WH-CH520", reason: "Superior 50-hour battery life and lighter weight, though slightly less bass." }
+      ],
+      verdict: "BUY with caution. The device is a solid value pick for bass-heavy listeners under Rs 1500. However, 28% of reviews appear suspicious. Verify you are buying from an authorized seller."
+    };
+  } else {
+    // Generic dynamic mock analysis
+    const cleanTitle = productTitle ? (productTitle.length > 50 ? productTitle.slice(0, 50) + '...' : productTitle) : 'this product';
+    return {
+      trustScore: 6.8,
+      reviewsAnalyzed: 25,
+      genuinePercent: 65,
+      suspiciousPercent: 25,
+      incentivizedPercent: 10,
+      redFlags: [
+        `Repeated generic positive phrases about "${cleanTitle}"`,
+        "Accounts review-burst behavior patterns detected",
+      ],
+      genuineComplaints: [
+        "Long-term durability concerns reported by users after 3 months",
+        "Standard packaging and delivery accessories could be improved",
+      ],
+      genuinePositives: [
+        "Performs well relative to its price bracket",
+        "Meets the primary functional expectations described by the seller",
+      ],
+      productSummary: {
+        overview: `A decent option for "${cleanTitle}". Most real buyers report satisfying performance, but note standard durability limitations over extended use.`,
+        buildQuality: "Average",
+        valueForMoney: "Average",
+        performance: "Average",
+        targetAudience: "Budget-conscious shoppers looking for reliable performance"
+      },
+      sellerIntel: {
+        riskLevel: "Safe",
+        redFlags: []
+      },
+      alternatives: [
+        { name: "Generic Premium Brand", reason: "Higher build quality and extended warranty support." },
+        { name: "Generic Entry Model", reason: "Lower price point while maintaining similar core utility." }
+      ],
+      verdict: `BUY with caution. A reasonable purchase choice for "${cleanTitle}", but check the return policy and seller ratings.`
+    };
+  }
+}
+
+module.exports = { getMockProductDetails, getMockPrice, generateMockReviews, getMockAnalysis };

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { api } from '../services/api';
 
 export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -19,12 +20,10 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       : formData;
 
     try {
-      const res = await fetch(`http://localhost:5000${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
+      // F-08 FIX: Replaced hardcoded 'http://localhost:5000' with centralized api instance.
+      // Previously: fetch(`http://localhost:5000${endpoint}`, ...)
+      // Now uses the shared axios instance from services/api.js which reads VITE_API_URL.
+      const { data } = await api.post(endpoint, body);
 
       if (data.success) {
         localStorage.setItem('token', data.token);
@@ -35,7 +34,9 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
         setError(data.error.message || 'Authentication failed');
       }
     } catch (err) {
-      setError('Network error. Please try again later.');
+      // Axios wraps error responses differently than fetch
+      const message = err.response?.data?.error?.message || 'Network error. Please try again later.';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -64,8 +65,9 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {!isLogin && (
             <div>
-              <label style={{ display: 'block', fontSize: '12px', color: '#8A8682', marginBottom: '4px' }}>Name</label>
+              <label htmlFor="name-input" style={{ display: 'block', fontSize: '12px', color: '#8A8682', marginBottom: '4px' }}>Name</label>
               <input 
+                id="name-input"
                 type="text" 
                 required 
                 value={formData.name}
@@ -76,8 +78,9 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
           )}
           
           <div>
-            <label style={{ display: 'block', fontSize: '12px', color: '#8A8682', marginBottom: '4px' }}>Email</label>
+            <label htmlFor="email-input" style={{ display: 'block', fontSize: '12px', color: '#8A8682', marginBottom: '4px' }}>Email</label>
             <input 
+              id="email-input"
               type="email" 
               required 
               value={formData.email}
@@ -87,8 +90,9 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '12px', color: '#8A8682', marginBottom: '4px' }}>Password</label>
+            <label htmlFor="password-input" style={{ display: 'block', fontSize: '12px', color: '#8A8682', marginBottom: '4px' }}>Password</label>
             <input 
+              id="password-input"
               type="password" 
               required 
               value={formData.password}

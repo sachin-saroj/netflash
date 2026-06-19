@@ -1,7 +1,9 @@
+import { Link } from 'react-router-dom';
+
 export default function Navbar({ user, onLoginClick, onLogout }) {
   return (
     <nav className="navbar">
-      <a href="/" className="logo">
+      <Link to="/" className="logo">
         <svg width="20" height="20" viewBox="0 0 40 40">
           <polygon
             points="20,3 33,3 37,11 33,19 20,19 16,11"
@@ -18,11 +20,11 @@ export default function Navbar({ user, onLoginClick, onLogout }) {
           <span className="logo-net">NET</span>
           <span className="logo-flash">flash</span>
         </span>
-      </a>
+      </Link>
       <div className="navbar-links">
         {user ? (
           <>
-            <a href="/dashboard" style={{ color: '#F5A623', fontWeight: 'bold' }}>⭐ Watchlist</a>
+            <Link to="/dashboard" style={{ color: '#F5A623', fontWeight: 'bold' }}>⭐ Watchlist</Link>
             <button onClick={onLogout} style={{ background: 'none', color: '#8A8682', fontSize: '13px', fontWeight: '500' }}>Logout</button>
           </>
         ) : (

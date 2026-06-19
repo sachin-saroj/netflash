@@ -1,8 +1,10 @@
+/* global window */
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 
-const SCREENSHOT_DIR = path.join(__dirname, '../screenshots');
+// F-14: Relocated screen capture script. Updated path to point correctly to root screenshots directory.
+const SCREENSHOT_DIR = path.join(__dirname, '../../screenshots');
 
 if (!fs.existsSync(SCREENSHOT_DIR)){
     fs.mkdirSync(SCREENSHOT_DIR);
@@ -28,8 +30,8 @@ if (!fs.existsSync(SCREENSHOT_DIR)){
   // ====== 2. NAVIGATE TO RESULTS (boAt Rockerz 450) ======
   console.log('[2/5] Triggering product analysis...');
   await page.goto('http://localhost:5173/results?url=https://www.amazon.in/dp/B08L5VM2B3', { 
-    waitUntil: 'domcontentloaded', 
-    timeout: 60000 
+     waitUntil: 'domcontentloaded', 
+     timeout: 60000 
   });
   
   // Wait for the analysis to complete — the .product-title appears when results render
