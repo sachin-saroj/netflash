@@ -1,15 +1,21 @@
-# NETflash — AI Product Intelligence Platform
-
 <div align="center">
 
-![NETflash Home](./screenshots/01_home.png)
+# NETflash
 
-**An AI-driven e-commerce analytics tool designed to evaluate review authenticity, track price volatility, and generate structured purchasing insights.**
+**AI-Powered E-Commerce Product Intelligence & Resiliency Showcase**
 
-[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=node.js)](https://nodejs.org/)
-[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb)](https://www.mongodb.com/)
-[![Gemini AI](https://img.shields.io/badge/Google-Gemini_AI-4285F4?style=flat-square&logo=google)](https://ai.google.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![React 18](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![MongoDB Atlas](https://img.shields.io/badge/MongoDB_Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/atlas)
+[![Google Gemini AI](https://img.shields.io/badge/Google_Gemini_AI-4285F4?style=for-the-badge&logo=googlegemini&logoColor=white)](https://ai.google.dev/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
+[![RapidAPI](https://img.shields.io/badge/RapidAPI-007ACC?style=for-the-badge&logo=rapidapi&logoColor=white)](https://rapidapi.com/)
+[![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
+
+[![AI-Powered](https://img.shields.io/badge/AI--Powered-blue?style=for-the-badge)](#)
+[![Mock Fallback: Active](https://img.shields.io/badge/Mock_Fallback-Active-green?style=for-the-badge)](#)
+[![Graceful Degradation](https://img.shields.io/badge/Graceful_Degradation-Active-orange?style=for-the-badge)](#)
 
 </div>
 
@@ -17,196 +23,313 @@
 
 ## 📌 Overview
 
-NETflash addresses the growing challenge of information asymmetry in e-commerce. By leveraging Large Language Models (LLMs), the platform aggregates unstructured review data from major marketplaces (Amazon, Flipkart, Meesho) and transforms it into structured, quantifiable intelligence. 
+NETflash is an AI-driven product intelligence platform designed to extract
+structured consumer insights from unstructured e-commerce reviews. The platform
+aggregates review datasets from Amazon, Flipkart, and Meesho, processes them
+using Large Language Models (LLMs), and displays metrics representing review
+authenticity, price volatility, and key alternatives.
 
-This project demonstrates full-stack proficiency, API integration, prompt engineering, and modern UI/UX principles.
+Designed with offline resiliency patterns, NETflash degrades gracefully when
+external scrapers or databases fail.
 
----
-
-## ✨ Core Features
-
-* **Authenticity Scoring (Review Radar):** Utilizes Google's Gemini AI to analyze linguistic patterns across review datasets, flagging potential burst-posting anomalies and incentivized reviews.
-* **Time-Series Price Tracking:** Visualizes 30-day price volatility using responsive area charts, providing historical context to current valuations.
-* **Structured Intelligence Extraction:** Processes raw text to isolate recurring genuine complaints, verified positives, and outputs a normalized Trust Score.
-* **Cross-Platform Price Aggregation:** Queries multiple marketplaces simultaneously to identify the most cost-effective purchasing option.
-* **User Retention Engine:** Implements secure JWT-based authentication, allowing users to persist analyzed products to a personal MongoDB-backed Watchlist.
-
----
-
-## 📸 Interface & Workflow
-
-### Intelligence Dashboard
-![Dashboard Top](./screenshots/02_dashboard_top.png)
-*Displays the calculated Trust Score, Review Radar metrics, and the synthesized AI Verdict based on the aggregated dataset.*
-
-### Deep-Dive Analytics
-![Dashboard Middle](./screenshots/03_dashboard_middle.png)
-*Categorical breakdown of Build Quality, Value, and Performance alongside the 30-day price volatility chart.*
-
-### Actionable Insights
-![Dashboard Bottom](./screenshots/04_dashboard_bottom.png)
-*Presents isolated consumer complaints and dynamic, AI-suggested product alternatives.*
+> [!IMPORTANT]
+> **Honest Positioning Notice**
+>
+> NETflash is not deployed to production and does not scrape real-time data in
+> all cases. The Mock Fallback Engine is active when external scraper APIs are
+> unavailable. Price history charts display mock data.
+>
+> This project demonstrates: LLM prompt engineering, API resilience patterns,
+> graceful degradation, and full-stack JavaScript architecture.
 
 ---
 
-## 🛠️ Technology Stack
+## ⚙️ System Architecture & Data Flow
 
-| Architecture Layer | Technologies Utilized |
-|-------------------|----------------------|
-| **Client / Frontend** | React 18, Vite, React Router DOM, Recharts, Custom CSS Modules |
-| **Server / API** | Node.js, Express.js, RESTful Architecture |
-| **Data Persistence** | MongoDB Atlas, Mongoose ODM |
-| **AI / Machine Learning** | Google Generative AI SDK (Gemini Pro) |
-| **Authentication & Security**| JSON Web Tokens (JWT), bcryptjs |
-| **External Integrations** | RapidAPI Scrapers (Amazon, Flipkart, Meesho) |
+### System Architecture
+The application runs on a three-tier architecture with separate authentication
+and database failover paths:
+
+```mermaid
+graph TD
+  subgraph Client [Client Layer]
+    UI["React 18 Frontend (Vite)"]
+  end
+
+  subgraph Auth [Authentication Lane]
+    JWT["JWT Auth Flow"]
+  end
+
+  subgraph API [API Layer]
+    Server["Express.js REST API (Node.js)"]
+  end
+
+  subgraph Data [Data & AI Services]
+    DB["MongoDB Atlas"]
+    Gemini["Gemini AI SDK"]
+    Scraper["RapidAPI Scrapers"]
+    Mock["Mock Fallback Engine"]
+  end
+
+  UI --> Server
+  JWT -.-> Server
+  Server --> DB
+  Server --> Gemini
+  Server --> Scraper
+
+  Scraper -- Fails --> Mock
+  Mock --> Server
+
+  DB -- Unreachable --> Core["Core Analysis (No Cache)"]
+  Core --> Server
+```
+
+### Product Analysis Sequence
+This sequence outlines the end-to-end data processing workflow for review
+aggregation and structural inference:
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor User
+  participant UI as React UI
+  participant API as Express API
+  participant Scrapers as RapidAPI Scrapers
+  participant Mock as Mock Fallback Engine
+  participant Gemini as Gemini AI
+  participant DB as MongoDB
+
+  User->>UI: Submits product URL/query
+  UI->>API: POST /api/analyze (URL)
+  API->>Scrapers: Fetch product reviews
+  alt Scrapers succeed
+    Scrapers-->>API: Raw review corpus
+  else Scrapers fail (rate-limit / block)
+    API->>Mock: Invoke Mock Fallback
+    Mock-->>API: Local structured mock reviews
+  end
+  API->>Gemini: Request analysis (reviews + JSON schema prompt)
+  Gemini-->>API: Trust Score, anomalies, complaints, alternatives
+  API->>API: Validate JSON payload schema
+  alt MongoDB is connected
+    API->>DB: Cache analysis response
+    DB-->>API: Cache confirmed
+  else MongoDB is unreachable
+    API->>API: Bypass caching (DB-less mode)
+  end
+  API-->>UI: Return structured analysis payload
+  UI-->>User: Return Trust Score, Radar, price history, alternatives
+```
+
+### Trust Score Computation
+Raw sentiment inputs map into normalized scores and discrete categorical verdicts:
+
+```mermaid
+flowchart LR
+  Input["Raw Review Dataset"] --> Analysis{"Gemini AI Engine"}
+  
+  Analysis --> Anomaly["Burst-posting Anomaly Detection"]
+  Analysis --> Lings["Incentivized Review Linguistic Patterns"]
+  Analysis --> Complaints["Genuine Complaint Isolation"]
+  Analysis --> Positives["Verified Positive Extraction"]
+  
+  Anomaly --> Score["Normalized Trust Score (0-100)"]
+  Lings --> Score
+  Complaints --> Score
+  Positives --> Score
+  
+  Score --> Categories["Category Scores (Build, Value, Performance)"]
+  Score --> Verdict["AI Verdict (BUY / HOLD / AVOID)"]
+```
 
 ---
 
-## 🧠 Engineering Challenges Solved
+## 🛠️ Core Features & Technical Mechanisms
 
-Building NETflash required addressing several technical hurdles common in data-aggregation platforms:
+| Feature | Technical Mechanism |
+| :--- | :--- |
+| Review Authenticity Scoring | Gemini Pro analyzes review corpus via JSON-schema prompt; flags burst-posting anomalies and incentivized linguistic patterns |
+| Trust Score | Normalized 0-100 composite from LLM-extracted signals: genuine complaints, verified positives, anomaly rate |
+| Price Volatility Tracking | 30-day mock historical data rendered via Recharts area chart; roadmap item to replace with persisted DB logging |
+| Cross-Platform Aggregation | Parallel RapidAPI calls to Amazon, Flipkart, Meesho scrapers; lowest-price identification server-side |
+| Mock Fallback Engine | On RapidAPI failure (rate limit/region block), server catches error and serves realistic localized mock data |
+| DB-less Graceful Degradation | Express detects MongoDB connection failure at startup; core analysis routes bypass cache and remain functional |
+| Watchlist Persistence | JWT-authenticated routes; products saved to user's MongoDB Atlas document |
+| AI Alternatives | Gemini returns dynamically generated substitute products as part of structured JSON response |
 
-1. **Unpredictable API Limits (Rate Limiting):** 
-   Implemented a **Mock Data Fallback Engine**. If external scraper APIs fail due to rate limits or region blocks (common with free-tier RapidAPI keys), the system gracefully catches the error and serves realistic, localized mock data. This guarantees 100% uptime for portfolio demonstrations.
-2. **LLM Output Instability:** 
-   Raw LLM outputs are notoriously unstructured. Designed strict JSON-schema prompts for Gemini AI, coupled with server-side validation, ensuring the frontend always receives predictable, render-safe data structures.
-3. **Database Dependency Failures:** 
-   Engineered the Express backend to support a "DB-less Graceful Degradation" mode. If MongoDB Atlas blocks the connection (e.g., due to dynamic IP changes), the core analysis features bypass caching and continue to function seamlessly.
+---
+
+## 🛡️ Resilience Architecture
+
+| Failure Scenario | Detection Method | Fallback Behavior | User Impact |
+| :--- | :--- | :--- | :--- |
+| RapidAPI rate limit / region block | HTTP error catch | Mock Fallback Engine serves localized data | Zero - analysis continues |
+| MongoDB Atlas unreachable (IP block) | Connection error catch | DB-less mode, bypass cache | Auth/Watchlist unavailable; analysis works |
+| Gemini AI returns malformed JSON | Server-side schema validation | Retry with stricter prompt or return error | Partial - user sees validation message |
+| Gemini API quota exceeded | HTTP 429 catch | Cached result served if available | None if cached; error if cold request |
+
+> [!WARNING]
+> **Price Volatility Limitation**
+>
+> The 30-day price history shown in the analytics dashboard is currently mock
+> data. Persistent historical logging is not yet implemented. This is listed in
+> the roadmap.
+
+> [!NOTE]
+> **API Constraints & Fallbacks**
+>
+> RapidAPI free-tier keys have strict rate limits and may be region-blocked. The
+> Mock Fallback Engine is active by default and will serve realistic data when
+> external scraper APIs are unavailable.
+
+---
+
+## 🧠 Prompt Engineering
+
+Raw Gemini outputs lack the deterministic formatting required for client-side API
+consumption. To resolve this, NETflash uses a custom system prompt that wraps LLM
+reasoning inside strict JSON-schema constraints. Server-side validation parses the
+raw text, serving as a second line of defense against parsing crashes.
+
+Expected Gemini JSON output payload structure:
+
+```json
+{
+  "trust_score": 72,
+  "verdict": "HOLD",
+  "flagged_review_count": 14,
+  "genuine_complaints": [
+    "battery drain after 3 months",
+    "plastic build quality"
+  ],
+  "verified_positives": [
+    "fast delivery",
+    "accurate color representation"
+  ],
+  "category_scores": {
+    "build_quality": 65,
+    "value_for_money": 80,
+    "performance": 71
+  },
+  "ai_summary": "Overall balanced specifications but limited build quality durability."
+}
+```
+
+---
+
+## 📁 Project Structure
+
+```text
+netflash/
+├── backend/
+│   ├── index.js
+│   ├── routes/
+│   │   ├── analysis.js
+│   │   ├── auth.js
+│   │   └── watchlist.js
+│   ├── services/
+│   │   ├── geminiService.js
+│   │   ├── scraperService.js
+│   │   └── mockFallback.js
+│   ├── models/
+│   │   ├── User.js
+│   │   └── WatchlistItem.js
+│   ├── middleware/
+│   │   └── authMiddleware.js
+│   └── .env.example
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── hooks/
+│   │   └── utils/
+│   └── vite.config.js
+└── README.md
+```
+
+---
+
+## ⚠️ Known Limitations
+
+| Limitation | Current State | Planned Fix |
+| :--- | :--- | :--- |
+| Price history | Mock data only | Persistent DB logging (roadmap) |
+| RapidAPI dependency | Free-tier rate limits apply | Paid tier or self-hosted scraper |
+| LLM hallucination | Gemini may generate plausible but incorrect alternatives | Cross-reference with real product DB |
+| Token cost scaling | Each analysis call consumes Gemini tokens | Redis caching layer (roadmap) |
+| No real-time data | Snapshots only, no polling | BullMQ/node-cron price alerts (roadmap) |
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v18 or higher)
-- MongoDB Atlas Cluster (Ensure your IP `0.0.0.0/0` is whitelisted)
-- Google Gemini API Key (Required for LLM review analysis)
 
-### Local Installation
+| Requirement | Version | Purpose |
+| :--- | :--- | :--- |
+| Node.js | v18+ | JavaScript server-side execution environment |
+| MongoDB Atlas account | Cloud account | Persists watchlist history and analysis caches |
+| Gemini API key | Standard Tier | Translates raw text to structured sentiment intelligence |
+| RapidAPI account | Scraper Tier | Integrates Amazon, Flipkart, and Meesho parser endpoints |
 
-**1. Clone the repository**
-```bash
-git clone https://github.com/sachin-saroj/netflash.git
-cd netflash
-```
+### ⚙️ Environment Variables
 
-**2. Configure the Backend**
-```bash
-cd backend
-npm install
-```
+Copy the backend configuration variables to a local `.env` file:
 
-Rename `.env.example` to `.env` and configure your environment variables.
+| Variable | Required | Description |
+| :--- | :--- | :--- |
+| PORT | No | Network port the Express server binds to (default: 5000) |
+| MONGODB_URI | Yes | Connection string to MongoDB database cluster |
+| GEMINI_API_KEY | Yes | API credential token for Google Generative AI |
+| RAPIDAPI_KEY | No | Access token for marketplace scrapers |
+| JWT_SECRET | Yes | Private key signing authentication token signatures |
+| JWT_EXPIRES_IN | No | Expiration lifespan definition for active tokens (e.g. 1d) |
 
-#### Environment Variables Reference
+### Installation
 
-| Variable | Required | Default / Example | Purpose | Fallback / Failure Behavior |
-| :--- | :---: | :--- | :--- | :--- |
-| `PORT` | No | `5000` | Port for the backend server to listen on. | Defaults to `5000`. |
-| `NODE_ENV` | No | `development` | Running environment mode (`development`, `production`, `test`). | Defaults to `development`. |
-| `FRONTEND_URL` | No | `http://localhost:5173` | Allowed origin for CORS verification. | Defaults to allowing local React server. |
-| `JWT_SECRET` | **Yes** | *See Generation below* | Cryptographic key used to sign and verify user JWT authentication sessions. | **Critical:** The server will crash and fail to start if this is missing. |
-| `MONGODB_URI` | **Yes** | `mongodb+srv://...` | Connection URI for the MongoDB database/cluster. | **Bypassed:** Bypasses caching and watchlist features gracefully (runs DB-less). |
-| `GEMINI_API_KEY` | **Yes** | `AIzaSy...` | Access token for the Google Generative AI (Gemini Pro) SDK. | Falls back to the mock data generator (Demo Mode). |
-| `RAPIDAPI_KEY` | No | `rapid_key...` | Key for e-commerce scraper APIs (Amazon, Flipkart, Meesho). | Falls back to the mock data generator (Demo Mode). |
-| `YOUTUBE_API_KEY` | No | `yt_key...` | Google Cloud API key for searching product review videos. | **Optional:** Returns `[]` and logs a warning; does not affect analysis functionality. |
-
-#### Generating JWT_SECRET
-To generate a secure 256-bit cryptographically strong key, run the following command in your terminal:
-```bash
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-```
-Copy the printed output and set it as `JWT_SECRET` in your `.env` file.
-
-Start the backend server:
-```bash
-node index.js
-```
-
-**3. Configure the Frontend**
-Open a new terminal window:
-```bash
-cd frontend
-npm install
-npm run dev
-```
-Navigate to `http://localhost:5173` to interact with the platform.
-
----
-
-## 🧪 Demo Mode & Mock Data (Graceful Degradation)
-
-To ensure high availability and robust performance during portfolio demonstrations, NETflash includes a fallback execution path when external APIs are rate-limited or blocked:
-
-1. **Activation Triggers:**
-   - **Gemini API Failures:** API quota exhaustion or connection timeouts.
-   - **Scraper Errors:** RapidAPI quota expiration, IP blocking, or invalid API credentials.
-   - **Database Outages:** MongoDB Atlas connection rejection (e.g. IP whitelist block) triggers a degraded "DB-less" caching bypass.
-
-2. **System Behavior:**
-   - The backend catches these exceptions, logs a warning, and switches to a local **Mock Data Engine** that returns a structure-compliant, realistic analysis.
-   - The API response contains a `demoMode: true` status flag.
-   - The React frontend detects this flag and overlays a prominent **"Demo Mode" banner** across the dashboard.
-
-> [!WARNING]
-> **Data Integrity Disclaimer**
-> Mock data served during Demo Mode is for visual evaluation and application stability purposes only. It should **never** be interpreted as authentic product sentiment or live intelligence.
-
-
-### 📸 Documentation Screenshots
-
-To regenerate or capture screenshots of the platform for documentation:
-1. Ensure both the backend and frontend servers are running locally.
-2. Run the capture script from the `backend/` directory:
+1. Clone the project repository:
    ```bash
-   npm run capture
+   git clone https://github.com/sachin-saroj/netflash.git
+   cd netflash
    ```
-This launches a headless browser via Puppeteer, triggers a demo analysis, and saves the generated screenshots directly to the root `screenshots/` directory.
 
-## 🧪 Automated Testing & Coverage
+2. Configure and run the backend server:
+   ```bash
+   cd backend
+   npm install
+   # Create a .env file from template instructions
+   node index.js
+   ```
 
-NETflash enforces high quality standards through extensive test coverage across both backend and frontend layers:
+3. Configure and start the React client:
+   ```bash
+   cd ../frontend
+   npm install
+   npm run dev
+   ```
 
-- **Backend Integration & Unit Tests (Jest):** 63 automated tests covering:
-  - Auth routes, payload validations, and rate-limiting limits.
-  - Price comparisons, cache hit/miss flows, and partial marketplace scraper failovers.
-  - CRUD operations and strict user-data ownership (IDOR prevention) on Watchlist.
-  - Helper logic unit tests (`extractProductId`, `cleanReviews`, and retry client `rapidApi` loops).
-- **Frontend Component & Routing Tests (Vitest & RTL):** 27 automated tests covering:
-  - Watchlist Dashboard loading spinners, empty lists, and error feedback modals.
-  - Form validation rules and input boundaries inside `SearchBar`.
-  - Color-coded threshold styling and label checks inside `TrustScoreCard`.
-  - Authentication interceptors checking automatic JWT header injection.
-
-### Running Tests Locally
-
-To run the entire test suite:
-
-**Backend Tests:**
-```bash
-cd backend
-npm run test          # Execute tests once
-npm run test:coverage # Generate HTML coverage report
-```
-
-**Frontend Tests:**
-```bash
-cd frontend
-npm run test          # Execute Vitest suite once
-npm run test:coverage # Generate HTML coverage report
-```
+4. Navigate to `http://localhost:5173` to run local analysis workflows.
 
 ---
 
-## 🗺️ Future Roadmap
+## 🗺️ Project Roadmap
 
-- [ ] **Background Price Polling:** Implement cron jobs (`node-cron` or `BullMQ`) to alert users when items in their Watchlist drop in price.
-- [ ] **Enhanced Visualizations:** Transition from mock historical price data to persistent data logging for true long-term price tracking.
-- [ ] **Browser Extension Integration:** Build a companion Chrome extension to overlay NETflash Trust Scores directly on Amazon/Flipkart product pages.
-- [ ] **Redis Caching:** Introduce Redis to cache frequent AI analysis results, reducing latency and LLM token costs.
+- [x] Gemini AI review authenticity scoring
+- [x] Cross-platform price aggregation (Amazon, Flipkart, Meesho)
+- [x] Mock Fallback Engine for API failures
+- [x] DB-less graceful degradation mode
+- [x] JWT auth + MongoDB Watchlist
+- [ ] Persistent 30-day price history logging (replaces mock data)
+- [ ] Redis caching for Gemini analysis results (reduce token cost)
+- [ ] BullMQ/node-cron price drop alerts for Watchlist items
+- [ ] Chrome extension: NETflash Trust Score overlay on product pages
+- [ ] Token denylist on JWT logout
 
 ---
 
-## 📄 License
+<div align="center">
 
-This project is licensed under the MIT License - feel free to use it for your own portfolio or educational purposes.
+Built with Node.js and Google Gemini AI · Not deployed to production  
+Designed to demonstrate LLM integration and API resilience patterns
+
+</div>
