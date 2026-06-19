@@ -7,6 +7,16 @@ const { fetchFlipkartProductWithReviews } = require('../services/flipkart');
 const { fetchMeeshoProductWithReviews } = require('../services/meesho');
 const Cache = require('../models/Cache');
 const logger = require('../utils/logger');
+const mongoose = require('mongoose');
+
+// F-05 FIX: Import analyze-specific rate limiter (20 req/hour/IP).
+// Previously defined in rateLimit.js but never imported or used here.
+const { analyzeRateLimit } = require('../middleware/rateLimit');
+
+// F-06 FIX: Import URL validation middleware.
+// Previously defined in validate.js but never imported or used here.
+// This runs BEFORE the handler, rejecting invalid/unsupported URLs at the middleware layer.
+const { validateUrl } = require('../middleware/validate');
 
 /**
  * Fetch product + reviews from the correct platform.
@@ -24,15 +34,15 @@ async function fetchFromPlatform(platform, productId, originalUrl) {
   }
 }
 
-router.post('/', async (req, res) => {
+// F-05 + F-06: Middleware chain order:
+//   1. analyzeRateLimit — reject if IP has exceeded 20 req/hour (cheapest check)
+//   2. validateUrl — reject if URL is missing, malformed, or from unsupported domain
+//   3. handler — business logic only runs after both guards pass
+router.post('/', analyzeRateLimit, validateUrl, async (req, res) => {
   const { url } = req.body;
 
-  if (!url) {
-    return res.status(400).json({
-      success: false,
-      error: { code: 'MISSING_URL', message: 'URL is required' }
-    });
-  }
+  // Note: URL presence and format validation is now handled by validateUrl middleware (F-06).
+  // The middleware rejects missing/invalid/unsupported URLs with 400 before this handler runs.
 
   let platformData;
   try {
@@ -48,7 +58,6 @@ router.post('/', async (req, res) => {
 
   // Check cache first
   try {
-    const mongoose = require('mongoose');
     if (mongoose.connection.readyState === 1) {
       const cached = await Cache.findOne({ key: cacheKey, expiresAt: { $gt: new Date() } });
       if (cached) {
@@ -76,7 +85,7 @@ router.post('/', async (req, res) => {
     }
 
     // Run AI analysis
-    const analysis = await analyzeReviews(productData.reviews);
+    const analysis = await analyzeReviews(productData.reviews, productData.title);
 
     // Generate a realistic 30-day mock price history based on current price
     const generatePriceHistory = (basePrice) => {
@@ -116,7 +125,6 @@ router.post('/', async (req, res) => {
     };
 
     // Cache for 2 hours (only if DB is connected)
-    const mongoose = require('mongoose');
     if (mongoose.connection.readyState === 1) {
       const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000);
       try {

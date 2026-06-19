@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../services/api';
 
 export default function Dashboard({ user }) {
   const [items, setItems] = useState([]);
@@ -8,21 +9,20 @@ export default function Dashboard({ user }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
+    const hasToken = localStorage.getItem('token');
+    if (!user && !hasToken) {
       navigate('/');
       return;
     }
+    if (!user) return;
 
     const fetchWatchlist = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/api/watchlist', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
+        // F-08 FIX: Replaced hardcoded 'http://localhost:5000/api/watchlist' with centralized api instance.
+        const res = await api.get('/api/watchlist');
         
-        if (data.success) {
-          setItems(data.data);
+        if (res.data.success) {
+          setItems(res.data.data);
         } else {
           setError('Failed to fetch watchlist');
         }
@@ -38,14 +38,10 @@ export default function Dashboard({ user }) {
 
   const handleRemove = async (id) => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/watchlist/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
+      // F-08 FIX: Replaced hardcoded 'http://localhost:5000/api/watchlist/${id}' with centralized api instance.
+      const res = await api.delete(`/api/watchlist/${id}`);
       
-      if (data.success) {
+      if (res.data.success) {
         setItems(items.filter(item => item._id !== id));
       }
     } catch (err) {
@@ -56,7 +52,7 @@ export default function Dashboard({ user }) {
   if (loading) return <div className="loading-page"><h2 className="loading-title">Loading Watchlist...</h2></div>;
 
   return (
-    <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '40px 24px', minHeight: 'calc(100vh - 56px)' }}>
+    <div className="dashboard-page" style={{ maxWidth: '1080px', margin: '0 auto', padding: '40px 24px', minHeight: 'calc(100vh - 56px)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
         <h1 style={{ fontFamily: 'Syne', fontSize: '32px', color: '#F0EDE8' }}>My Watchlist</h1>
         <div style={{ fontSize: '14px', color: '#8A8682' }}>{items.length} items saved</div>
@@ -74,7 +70,7 @@ export default function Dashboard({ user }) {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
           {items.map(item => (
-            <div key={item._id} className="card" style={{ display: 'flex', flexDirection: 'column', padding: '16px' }}>
+            <div key={item._id} className="watchlist-card card" style={{ display: 'flex', flexDirection: 'column', padding: '16px' }}>
               <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
                 {item.image && (
                   <img src={item.image} alt="product" style={{ width: '60px', height: '60px', objectFit: 'contain', background: '#1E1E1E', borderRadius: '6px' }} />
@@ -99,7 +95,7 @@ export default function Dashboard({ user }) {
                     onClick={() => handleRemove(item._id)}
                     style={{ background: 'transparent', border: '1px solid #3A3A3A', color: '#EF4444', padding: '6px 12px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}
                   >
-                    Remove
+                    Delete
                   </button>
                   <button 
                     onClick={() => navigate(`/results?url=${encodeURIComponent(item.url)}`)}

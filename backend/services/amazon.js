@@ -1,50 +1,26 @@
-const axios = require('axios');
 const { cleanReviews } = require('../utils/cleanReviews');
-const { getMockProductDetails } = require('../utils/mockData');
+const { getMockProductDetails, getMockPrice } = require('../utils/mockData');
+const { createRapidApiClient, requestWithRetry } = require('./clients/rapidApi');
 const logger = require('../utils/logger');
 
 const RAPIDAPI_HOST = 'real-time-amazon-data-mega.p.rapidapi.com';
+const amazonClient = createRapidApiClient(RAPIDAPI_HOST);
 
 /** Simple delay helper */
 const delay = (ms) => new Promise(r => setTimeout(r, ms));
-
-/**
- * Make a request with retry for 429 rate-limit errors
- */
-async function requestWithRetry(config, retries = 2) {
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      return await axios(config);
-    } catch (err) {
-      const status = err.response?.status;
-      if ((status === 429 || status === 500) && attempt < retries) {
-        const waitMs = (attempt + 1) * 2000; // 2s, 4s
-        logger.warn('amazon', `Rate limited (${status}), retrying in ${waitMs}ms...`);
-        await delay(waitMs);
-        continue;
-      }
-      throw err;
-    }
-  }
-}
 
 /**
  * Fetch product details from Amazon via RapidAPI
  */
 async function fetchProductDetails(asin) {
   try {
-    const response = await requestWithRetry({
+    const response = await requestWithRetry(amazonClient, {
       method: 'GET',
-      url: `https://${RAPIDAPI_HOST}/product-details`,
+      url: '/product-details',
       params: {
         asin,
         country: 'IN'
-      },
-      headers: {
-        'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
-        'X-RapidAPI-Host': RAPIDAPI_HOST
-      },
-      timeout: 10000
+      }
     });
 
     const product = response.data?.data;
@@ -78,20 +54,16 @@ async function fetchReviews(asin, pages = 3) {
       // Add slight delay between pages to avoid rate limiting
       if (page > 1) await delay(1000);
 
-      const response = await requestWithRetry({
+      const response = await requestWithRetry(amazonClient, {
         method: 'GET',
-        url: `https://${RAPIDAPI_HOST}/product-reviews`,
+        url: '/product-reviews',
         params: {
           asin,
           country: 'IN',
           page: page.toString(),
           sort_by: 'TOP_REVIEWS'
         },
-        headers: {
-          'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
-          'X-RapidAPI-Host': RAPIDAPI_HOST
-        },
-        timeout: 15000
+        timeout: 15000 // Custom longer timeout for review extraction
       });
 
       const reviews = response.data?.data?.reviews;
@@ -141,4 +113,44 @@ async function fetchProductWithReviews(productId) {
   }
 }
 
-module.exports = { fetchProductDetails, fetchReviews, fetchProductWithReviews };
+/**
+ * Fetch Amazon price by ASIN (used in cross-platform price comparison)
+ */
+async function fetchAmazonPriceById(asin) {
+  try {
+    const product = await fetchProductDetails(asin);
+    return {
+      platform: 'amazon',
+      price: product.currentPrice || null,
+      title: product.title,
+      url: product.url,
+      available: product.currentPrice > 0
+    };
+  } catch (err) {
+    logger.warn('amazon', 'Amazon price fetch failed, using mock data', { error: err.message });
+    return getMockPrice('amazon', 800, asin);
+  }
+}
+
+/**
+ * Search Amazon for a product by title (unsupported in our RapidAPI tier, returns honest status)
+ */
+async function fetchAmazonPriceBySearch(productTitle) {
+  logger.info('amazon', 'Amazon search-by-title not supported — skipping', {
+    reason: 'No Amazon search API available in current stack',
+    source: 'unsupported'
+  });
+  return {
+    platform: 'amazon',
+    price: null,
+    available: false
+  };
+}
+
+module.exports = {
+  fetchProductDetails,
+  fetchReviews,
+  fetchProductWithReviews,
+  fetchAmazonPriceById,
+  fetchAmazonPriceBySearch
+};

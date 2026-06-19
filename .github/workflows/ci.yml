@@ -1,0 +1,84 @@
+name: NETflash CI Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # --- Backend Checks ---
+      - name: Install backend dependencies
+        run: npm install
+        working-directory: backend
+
+      - name: Run backend linting
+        run: npm run lint
+        working-directory: backend
+
+      - name: Run backend unit/integration tests with coverage
+        run: npm run test:coverage
+        working-directory: backend
+        env:
+          NODE_ENV: test
+          JWT_SECRET: ci_secret_key_2026_test
+
+      # --- Frontend Checks ---
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: frontend
+
+      - name: Run frontend linting
+        run: npm run lint
+        working-directory: frontend
+
+      - name: Run frontend Vitest unit/component tests with coverage
+        run: npm run test:coverage
+        working-directory: frontend
+
+      - name: Build frontend app
+        run: npm run build
+        working-directory: frontend
+
+      # --- Playwright E2E Tests ---
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+        working-directory: frontend
+
+      - name: Start backend server in background
+        run: |
+          npm start &
+          echo "Waiting for backend server to start..."
+          sleep 5
+        working-directory: backend
+        env:
+          PORT: 5000
+          MONGODB_URI: mongodb://localhost:27017/netflash
+          JWT_SECRET: ci_secret_key_2026_test
+          RAPIDAPI_KEY: ""
+          YOUTUBE_API_KEY: ""
+
+      - name: Run Playwright E2E tests
+        run: npm run test:e2e
+        working-directory: frontend
+        env:
+          VITE_API_URL: http://localhost:5000
+          CI: true

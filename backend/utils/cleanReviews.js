@@ -5,6 +5,7 @@
 function cleanReviews(reviews, platform) {
   if (!Array.isArray(reviews)) return [];
 
+  const seen = new Set();
   return reviews
     .filter(r => r && (r.text || r.body || r.review_text || r.content))
     .map(r => {
@@ -23,7 +24,12 @@ function cleanReviews(reviews, platform) {
         platform
       };
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter(r => {
+      if (seen.has(r.text)) return false;
+      seen.add(r.text);
+      return true;
+    });
 }
 
 module.exports = { cleanReviews };

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { analyzeProduct, getPrice } from '../services/api';
+import { analyzeProduct, getPrice, api } from '../services/api';
 import LoadingState from '../components/LoadingState';
 import TrustScoreCard from '../components/TrustScoreCard';
 import PriceCard from '../components/PriceCard';
@@ -107,32 +107,29 @@ export default function Results({ user, onLoginClick }) {
   }, [url]);
 
   const handleSave = async () => {
-    if (!user || !data) return;
+    console.log('[DEBUG handleSave] clicked. user:', !!user, 'data:', !!data);
+    if (!user || !data) {
+      console.log('[DEBUG handleSave] early return because user or data is falsy');
+      return;
+    }
     
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/watchlist', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          productId: data.product.id,
-          platform: data.product.platform,
-          title: data.product.title,
-          image: data.product.image,
-          currentPrice: data.product.currentPrice,
-          url: url
-        })
+      const result = await api.post('/api/watchlist', {
+        productId: data.product.id,
+        platform: data.product.platform,
+        title: data.product.title,
+        image: data.product.image,
+        currentPrice: data.product.currentPrice,
+        url: url
       });
+
       
-      const result = await res.json();
-      if (result.success) {
+      console.log('[DEBUG handleSave] response data:', result.data);
+      if (result.data.success) {
         setSaved(true);
       }
     } catch (err) {
-      console.error('Save failed');
+      console.error('[DEBUG handleSave] error:', err.response?.data || err.message);
     }
   };
 
@@ -143,6 +140,19 @@ export default function Results({ user, onLoginClick }) {
 
   return (
     <div className="results-page">
+      {/* Demo Warning Banner */}
+      {analysis?.demoMode && (
+        <div className="demo-warning-banner" id="demo-mode-warning">
+          <span className="demo-warning-icon">⚠</span>
+          <div className="demo-warning-content">
+            <h4 className="demo-warning-title">Demo Mode Active</h4>
+            <p className="demo-warning-text">
+              Live AI analysis is currently unavailable. The analysis shown below is sample/demo content and may not correspond to the submitted product.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Product Header */}
       <div className="product-header card">
         {product.image && (
