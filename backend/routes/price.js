@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { fetchProductDetails } = require('../services/amazon');
-const { fetchFlipkartPrice } = require('../services/flipkart');
-const { fetchMeeshoPrice } = require('../services/meesho');
+const { fetchAmazonPriceById, fetchAmazonPriceBySearch } = require('../services/amazon');
+const { fetchFlipkartPriceById, fetchFlipkartPrice } = require('../services/flipkart');
+const { fetchMeeshoPriceById, fetchMeeshoPrice } = require('../services/meesho');
 const Cache = require('../models/Cache');
 const logger = require('../utils/logger');
 
@@ -40,10 +40,8 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    // Build platform-specific fetch promises
-    // For the SOURCE platform, use direct API call with product ID
-    // For OTHER platforms, use search by product title
-
+    // Build platform-specific fetch promises using service layer methods.
+    // Route layer remains clean and is not aware of Axios configuration, headers, or external URLs.
     const amazonPromise = platform === 'amazon'
       ? fetchAmazonPriceById(platformId)
       : fetchAmazonPriceBySearch(productTitle);
@@ -137,104 +135,5 @@ router.post('/', async (req, res) => {
     });
   }
 });
-
-// ── Platform-specific price fetchers ──
-
-const { getMockPrice } = require('../utils/mockData');
-
-async function fetchAmazonPriceById(asin) {
-  try {
-    const product = await fetchProductDetails(asin);
-    return {
-      platform: 'amazon',
-      price: product.currentPrice || null,
-      title: product.title,
-      url: product.url,
-      available: product.currentPrice > 0
-    };
-  } catch (err) {
-    logger.warn('price', 'Amazon price fetch failed, using mock data', { error: err.message });
-    return getMockPrice('amazon', 800);
-  }
-}
-
-async function fetchAmazonPriceBySearch(productTitle) {
-  // Amazon doesn't have a search API in our stack — return mock data
-  logger.info('price', 'Amazon search-by-title not available, returning mock price');
-  return getMockPrice('amazon', Math.floor(Math.random() * 500) + 500);
-}
-
-async function fetchFlipkartPriceById(productId, knownPrice) {
-  // If we already have the price from analysis, use it
-  if (knownPrice && knownPrice > 0) {
-    return {
-      platform: 'flipkart',
-      price: knownPrice,
-      title: '',
-      url: null,
-      available: true
-    };
-  }
-  // Otherwise fetch fresh
-  try {
-    const axios = require('axios');
-    const response = await axios.get('https://real-time-flipkart-data2.p.rapidapi.com/product', {
-      params: { pid: productId },
-      headers: {
-        'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
-        'X-RapidAPI-Host': 'real-time-flipkart-data2.p.rapidapi.com'
-      },
-      timeout: 10000
-    });
-    const p = response.data;
-    const price = parseFloat(String(p?.price || p?.selling_price || '0').replace(/[₹,\s]/g, ''));
-    if (price <= 0) throw new Error('Invalid price');
-    return { platform: 'flipkart', price, available: true };
-  } catch (err) {
-    logger.warn('price', 'Flipkart direct price fetch failed, using mock data', { error: err.message });
-    return getMockPrice('flipkart', Math.floor(Math.random() * 500) + 500);
-  }
-}
-
-async function fetchMeeshoPriceById(productId, knownPrice) {
-  if (knownPrice && knownPrice > 0) {
-    return {
-      platform: 'meesho',
-      price: knownPrice,
-      title: '',
-      url: null,
-      available: true
-    };
-  }
-  try {
-    const axios = require('axios');
-    const productUrl = `https://www.meesho.com/product/${productId}`;
-    const response = await axios.post(
-      'https://meesho-price-history-tracker4.p.rapidapi.com/meesho.php',
-      `url=${encodeURIComponent(productUrl)}`,
-      {
-      headers: {
-        'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
-        'X-RapidAPI-Host': 'meesho-price-history-tracker4.p.rapidapi.com'
-      },
-      timeout: 10000
-    });
-    
-    const data = response.data;
-    let price = 0;
-    if (Array.isArray(data) && data.length > 0) {
-      price = data[0].averageprice || data[0].lowestprice || 0;
-    } else {
-      price = parseFloat(String(data?.price || data?.current_price || '0').replace(/[₹,\s]/g, ''));
-    }
-    
-    if (price <= 0) throw new Error('Invalid price');
-    
-    return { platform: 'meesho', price, available: true };
-  } catch (err) {
-    logger.warn('price', 'Meesho direct price fetch failed, using mock data', { error: err.message });
-    return getMockPrice('meesho', Math.floor(Math.random() * 500) + 500);
-  }
-}
 
 module.exports = router;
