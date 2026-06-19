@@ -80,13 +80,13 @@ Building NETflash required addressing several technical hurdles common in data-a
 ### Prerequisites
 - Node.js (v18 or higher)
 - MongoDB Atlas Cluster (Ensure your IP `0.0.0.0/0` is whitelisted)
-- Google Gemini API Key
+- Google Gemini API Key (Required for LLM review analysis)
 
 ### Local Installation
 
 **1. Clone the repository**
 ```bash
-git clone https://github.com/yourusername/netflash.git
+git clone https://github.com/sachin-saroj/netflash.git
 cd netflash
 ```
 
@@ -95,13 +95,29 @@ cd netflash
 cd backend
 npm install
 ```
-Rename `.env.example` to `.env` and inject your credentials:
-```env
-PORT=5000
-MONGODB_URI=your_mongodb_connection_string
-GEMINI_API_KEY=your_gemini_api_key
-RAPIDAPI_KEY=your_rapidapi_key
+
+Rename `.env.example` to `.env` and configure your environment variables.
+
+#### Environment Variables Reference
+
+| Variable | Required | Default / Example | Purpose | Fallback / Failure Behavior |
+| :--- | :---: | :--- | :--- | :--- |
+| `PORT` | No | `5000` | Port for the backend server to listen on. | Defaults to `5000`. |
+| `NODE_ENV` | No | `development` | Running environment mode (`development`, `production`, `test`). | Defaults to `development`. |
+| `FRONTEND_URL` | No | `http://localhost:5173` | Allowed origin for CORS verification. | Defaults to allowing local React server. |
+| `JWT_SECRET` | **Yes** | *See Generation below* | Cryptographic key used to sign and verify user JWT authentication sessions. | **Critical:** The server will crash and fail to start if this is missing. |
+| `MONGODB_URI` | **Yes** | `mongodb+srv://...` | Connection URI for the MongoDB database/cluster. | **Bypassed:** Bypasses caching and watchlist features gracefully (runs DB-less). |
+| `GEMINI_API_KEY` | **Yes** | `AIzaSy...` | Access token for the Google Generative AI (Gemini Pro) SDK. | Falls back to the mock data generator (Demo Mode). |
+| `RAPIDAPI_KEY` | No | `rapid_key...` | Key for e-commerce scraper APIs (Amazon, Flipkart, Meesho). | Falls back to the mock data generator (Demo Mode). |
+| `YOUTUBE_API_KEY` | No | `yt_key...` | Google Cloud API key for searching product review videos. | **Optional:** Returns `[]` and logs a warning; does not affect analysis functionality. |
+
+#### Generating JWT_SECRET
+To generate a secure 256-bit cryptographically strong key, run the following command in your terminal:
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
+Copy the printed output and set it as `JWT_SECRET` in your `.env` file.
+
 Start the backend server:
 ```bash
 node index.js
@@ -115,6 +131,70 @@ npm install
 npm run dev
 ```
 Navigate to `http://localhost:5173` to interact with the platform.
+
+---
+
+## 🧪 Demo Mode & Mock Data (Graceful Degradation)
+
+To ensure high availability and robust performance during portfolio demonstrations, NETflash includes a fallback execution path when external APIs are rate-limited or blocked:
+
+1. **Activation Triggers:**
+   - **Gemini API Failures:** API quota exhaustion or connection timeouts.
+   - **Scraper Errors:** RapidAPI quota expiration, IP blocking, or invalid API credentials.
+   - **Database Outages:** MongoDB Atlas connection rejection (e.g. IP whitelist block) triggers a degraded "DB-less" caching bypass.
+
+2. **System Behavior:**
+   - The backend catches these exceptions, logs a warning, and switches to a local **Mock Data Engine** that returns a structure-compliant, realistic analysis.
+   - The API response contains a `demoMode: true` status flag.
+   - The React frontend detects this flag and overlays a prominent **"Demo Mode" banner** across the dashboard.
+
+> [!WARNING]
+> **Data Integrity Disclaimer**
+> Mock data served during Demo Mode is for visual evaluation and application stability purposes only. It should **never** be interpreted as authentic product sentiment or live intelligence.
+
+
+### 📸 Documentation Screenshots
+
+To regenerate or capture screenshots of the platform for documentation:
+1. Ensure both the backend and frontend servers are running locally.
+2. Run the capture script from the `backend/` directory:
+   ```bash
+   npm run capture
+   ```
+This launches a headless browser via Puppeteer, triggers a demo analysis, and saves the generated screenshots directly to the root `screenshots/` directory.
+
+## 🧪 Automated Testing & Coverage
+
+NETflash enforces high quality standards through extensive test coverage across both backend and frontend layers:
+
+- **Backend Integration & Unit Tests (Jest):** 63 automated tests covering:
+  - Auth routes, payload validations, and rate-limiting limits.
+  - Price comparisons, cache hit/miss flows, and partial marketplace scraper failovers.
+  - CRUD operations and strict user-data ownership (IDOR prevention) on Watchlist.
+  - Helper logic unit tests (`extractProductId`, `cleanReviews`, and retry client `rapidApi` loops).
+- **Frontend Component & Routing Tests (Vitest & RTL):** 27 automated tests covering:
+  - Watchlist Dashboard loading spinners, empty lists, and error feedback modals.
+  - Form validation rules and input boundaries inside `SearchBar`.
+  - Color-coded threshold styling and label checks inside `TrustScoreCard`.
+  - Authentication interceptors checking automatic JWT header injection.
+
+### Running Tests Locally
+
+To run the entire test suite:
+
+**Backend Tests:**
+```bash
+cd backend
+npm run test          # Execute tests once
+npm run test:coverage # Generate HTML coverage report
+```
+
+**Frontend Tests:**
+```bash
+cd frontend
+npm run test          # Execute Vitest suite once
+npm run test:coverage # Generate HTML coverage report
+```
 
 ---
 
