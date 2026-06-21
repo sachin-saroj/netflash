@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BASE } from '../services/api';
 
 export default function Dashboard({ user }) {
   const [items, setItems] = useState([]);
@@ -16,7 +17,7 @@ export default function Dashboard({ user }) {
     const fetchWatchlist = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/api/watchlist', {
+        const res = await fetch(`${BASE}/api/watchlist`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -39,7 +40,7 @@ export default function Dashboard({ user }) {
   const handleRemove = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/watchlist/${id}`, {
+      const res = await fetch(`${BASE}/api/watchlist/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BASE } from '../services/api';
 
 export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -19,7 +20,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       : formData;
 
     try {
-      const res = await fetch(`http://localhost:5000${endpoint}`, {
+      const res = await fetch(`${BASE}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
