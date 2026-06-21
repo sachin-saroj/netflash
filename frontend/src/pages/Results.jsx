@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { analyzeProduct, getPrice } from '../services/api';
+import { analyzeProduct, getPrice, BASE } from '../services/api';
 import LoadingState from '../components/LoadingState';
 import TrustScoreCard from '../components/TrustScoreCard';
 import PriceCard from '../components/PriceCard';
@@ -76,6 +76,8 @@ export default function Results({ user, onLoginClick }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [priceData, setPriceData] = useState(null);
+  const [priceLoading, setPriceLoading] = useState(false);
+  const [priceError, setPriceError] = useState(null);
   const [saved, setSaved] = useState(false);
 
   const url = searchParams.get('url');
@@ -95,9 +97,18 @@ export default function Results({ user, onLoginClick }) {
         // Kick off price comparison in parallel once we have product data
         const { product } = res.data;
         if (product?.id && product?.title) {
+          setPriceLoading(true);
+          setPriceError(null);
           getPrice(product.id, product.title, product.platform, product.currentPrice)
-            .then(priceRes => setPriceData(priceRes.data))
-            .catch(() => setPriceData(null));
+            .then(priceRes => {
+              setPriceData(priceRes.data);
+              setPriceLoading(false);
+            })
+            .catch(err => {
+              setPriceError(err.response?.data?.error?.message || 'Price fetch failed');
+              setPriceLoading(false);
+              setPriceData(null);
+            });
         }
       })
       .catch(err => {
@@ -111,7 +122,7 @@ export default function Results({ user, onLoginClick }) {
     
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/watchlist', {
+      const res = await fetch(`${BASE}/api/watchlist`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -181,7 +192,7 @@ export default function Results({ user, onLoginClick }) {
           score={analysis.trustScore}
           reviewCount={analysis.reviewsAnalyzed}
         />
-        <PriceCard mode="winner" data={priceData} />
+        <PriceCard mode="winner" data={priceData} loading={priceLoading} error={priceError} />
         <ReviewRadarCard
           genuine={analysis.genuinePercent}
           suspicious={analysis.suspiciousPercent}
@@ -194,9 +205,9 @@ export default function Results({ user, onLoginClick }) {
         <PriceCard
           mode="full"
           data={priceData}
-          productId={product.id}
-          platform={product.platform}
-          title={product.title}
+          loading={priceLoading}
+          error={priceError}
+          sourcePrice={product.currentPrice}
         />
         <AiVerdict
           verdict={analysis.verdict}
