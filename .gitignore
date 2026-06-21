@@ -29,3 +29,15 @@ backend/.cache/
 
 # Temp files
 *.tmp
+
+# Test and Coverage
+backend/coverage/
+frontend/coverage/
+frontend/test-results/
+
+# Scratch and Debug files
+backend/scratch_*.js
+backend/*_debug.png
+backend/*_debug.jpg
+screenshots/*.png
+
