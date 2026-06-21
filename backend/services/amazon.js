@@ -1,6 +1,7 @@
 const axios = require('axios');
 const { cleanReviews } = require('../utils/cleanReviews');
 const { getMockProductDetails } = require('../utils/mockData');
+const { scrapeProductDetails } = require('./puppeteerScraper');
 const logger = require('../utils/logger');
 
 const RAPIDAPI_HOST = 'real-time-amazon-data-mega.p.rapidapi.com';
@@ -32,6 +33,10 @@ async function requestWithRetry(config, retries = 2) {
  * Fetch product details from Amazon via RapidAPI
  */
 async function fetchProductDetails(asin) {
+  if (!process.env.RAPIDAPI_KEY) {
+    logger.warn('amazon', 'RAPIDAPI_KEY not set, bypassing API and using mock details');
+    throw new Error('MOCK_FALLBACK');
+  }
   try {
     const response = await requestWithRetry({
       method: 'GET',
@@ -71,6 +76,10 @@ async function fetchProductDetails(asin) {
  * Fetch product reviews from Amazon via RapidAPI
  */
 async function fetchReviews(asin, pages = 3) {
+  if (!process.env.RAPIDAPI_KEY) {
+    logger.warn('amazon', 'RAPIDAPI_KEY not set, bypassing API and using mock reviews');
+    throw new Error('MOCK_FALLBACK');
+  }
   const allReviews = [];
 
   for (let page = 1; page <= pages; page++) {
@@ -121,23 +130,31 @@ async function fetchReviews(asin, pages = 3) {
 /**
  * Fetch product details + reviews in one call
  */
-async function fetchProductWithReviews(productId) {
-  try {
-    // Fetch product details first, then reviews with slight stagger
-    const productDetails = await fetchProductDetails(productId);
-    await delay(500);
-    const reviews = await fetchReviews(productId);
-
-    return {
-      ...productDetails,
-      reviews
-    };
-  } catch (err) {
-    if (err.message === 'MOCK_FALLBACK') {
-      logger.info('amazon', 'Using mock data for Amazon product due to API failure or limitation');
-      return getMockProductDetails('amazon', productId);
+async function fetchProductWithReviews(productId, originalUrl = '') {
+  let apiSucceeded = false;
+  if (process.env.RAPIDAPI_KEY) {
+    try {
+      logger.info('amazon', `Attempting API details fetch for: ${productId}`);
+      const productDetails = await fetchProductDetails(productId);
+      await delay(500);
+      const reviews = await fetchReviews(productId).catch(() => []);
+      apiSucceeded = true;
+      return {
+        ...productDetails,
+        reviews
+      };
+    } catch (err) {
+      logger.warn('amazon', 'Amazon API fetch failed, trying local scrape', { error: err.message });
     }
-    throw err;
+  }
+
+  // Fallback to local Puppeteer scrape
+  try {
+    const realData = await scrapeProductDetails('amazon', productId, originalUrl);
+    return realData;
+  } catch (scrapeErr) {
+    logger.warn('amazon', 'Local scrape failed, using static mock details fallback as last resort', { error: scrapeErr.message });
+    return getMockProductDetails('amazon', productId);
   }
 }
 
