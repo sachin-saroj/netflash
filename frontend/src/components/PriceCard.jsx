@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { getPrice } from '../services/api';
+import { useEffect } from 'react';
 
 function formatPrice(price) {
   if (!price || price <= 0) return '—';
@@ -16,45 +15,26 @@ function timeAgo(dateStr) {
   return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
 }
 
-export default function PriceCard({ mode, data, productId, platform, title }) {
-  const [priceData, setPriceData] = useState(data || null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  // For mode="full", fetch price data on mount
-  useEffect(() => {
-    if (mode !== 'full' || !productId || !title) return;
-    if (priceData?.prices?.length) return; // already have data
-
-    setLoading(true);
-    getPrice(productId, title, platform)
-      .then(res => {
-        setPriceData(res.data);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err.response?.data?.error?.message || 'Price fetch failed');
-        setLoading(false);
-      });
-  }, [mode, productId, title, platform]);
+export default function PriceCard({ mode, data, loading, error, sourcePrice }) {
+  const priceData = data;
 
   // ── WINNER MODE (small stat card in row 1) ──
   if (mode === 'winner') {
     // If we have data passed from parent, show the winner
-    if (data?.cheapestPlatform) {
-      const cheapest = data.prices?.find(p => p.isCheapest);
+    if (priceData?.cheapestPlatform) {
+      const cheapest = priceData.prices?.find(p => p.isCheapest);
       return (
         <div className="card price-card">
           <div className="section-label">PRICE WINNER</div>
           <div className="price-winner-platform">
-            {capitalize(data.cheapestPlatform)}
+            {capitalize(priceData.cheapestPlatform)}
           </div>
           <div className="price-winner-amount font-mono">
             {formatPrice(cheapest?.price)}
           </div>
-          {data.savings > 0 && (
+          {priceData.savings > 0 && (
             <div className="price-winner-savings">
-              Save ₹{data.savings.toLocaleString('en-IN')}
+              Save ₹{priceData.savings.toLocaleString('en-IN')}
             </div>
           )}
         </div>

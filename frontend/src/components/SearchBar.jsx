@@ -16,11 +16,7 @@ export default function SearchBar() {
       return;
     }
 
-    const isValid =
-      trimmed.includes('amazon.in') ||
-      trimmed.includes('amazon.com') ||
-      trimmed.includes('flipkart.com') ||
-      trimmed.includes('meesho.com');
+    const isValid = /amazon\.|amzn\.|flipkart\.com|fkrt\.it|meesho\.com/i.test(trimmed);
 
     if (!isValid) {
       setError('Please paste an Amazon, Flipkart, or Meesho product link');
