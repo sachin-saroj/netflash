@@ -131,18 +131,32 @@ function getMockProductDetails(platform, productId) {
 /**
  * Provides mock price data for cross-platform comparison
  */
-function getMockPrice(platform, sourcePrice) {
-  const variance = sourcePrice * 0.15;
-  const mockPrice = Math.round(sourcePrice + (Math.random() * variance * 2 - variance));
+function getMockPrice(platform, sourcePrice, productTitle = '') {
+  const basePrice = sourcePrice || (Math.floor(Math.random() * 500) + 500);
+  const variance = basePrice * 0.05; // 5% variance for more realistic price comparison
+  const mockPrice = Math.round(basePrice + (Math.random() * variance * 2 - variance));
   
+  let title = productTitle;
+  if (!title) {
+    title = platform === 'amazon' ? 'boAt Rockerz 450 Bluetooth Headphones'
+         : platform === 'flipkart' ? 'boAt Rockerz 450 On-Ear Headphone'
+         : 'boAt Rockerz 450 Wireless Headset';
+  }
+
+  const queryWords = title.split(/\s+/).filter(Boolean).slice(0, 4).join(' ');
+  const query = encodeURIComponent(queryWords);
+  const url = platform === 'amazon'
+    ? `https://www.amazon.in/s?k=${query}`
+    : platform === 'flipkart'
+    ? `https://www.flipkart.com/search?q=${query}`
+    : `https://www.meesho.com/search?q=${query}`;
+
   return {
     platform,
     price: mockPrice,
-    mrp: Math.round(mockPrice * 1.2),
-    title: platform === 'amazon' ? 'boAt Rockerz 450 Bluetooth Headphones'
-         : platform === 'flipkart' ? 'boAt Rockerz 450 On-Ear Headphone'
-         : 'boAt Rockerz 450 Wireless Headset',
-    url: 'https://www.' + platform + (platform === 'amazon' ? '.in' : '.com') + '/search?q=boat+rockerz+450',
+    mrp: Math.round(mockPrice * 1.15),
+    title: title,
+    url: url,
     available: true
   };
 }
