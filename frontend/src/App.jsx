@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Results from './pages/Results';
 import Dashboard from './pages/Dashboard';
 import AuthModal from './components/AuthModal';
+import HeroWave from './components/ui/dynamic-wave-canvas-background';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -25,6 +26,10 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <div className="global-wave-background">
+        <HeroWave />
+      </div>
+      
       <Navbar user={user} onLoginClick={() => setIsAuthOpen(true)} onLogout={handleLogout} />
       
       <AuthModal 
@@ -41,3 +46,4 @@ export default function App() {
     </BrowserRouter>
   );
 }
+
