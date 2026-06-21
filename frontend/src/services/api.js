@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+export const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export const analyzeProduct = async (url) => {
   const { data } = await axios.post(`${BASE}/api/analyze`, { url });
