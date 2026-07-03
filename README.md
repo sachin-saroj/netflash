@@ -336,4 +336,5 @@ Designed to demonstrate LLM integration and API resilience patterns
 
 
 ## Changelog
+- **[#33]** Add try-catch error boundary wrapping Gemini pricing analysis
 - **[#31]** Add fallback placeholder for missing product thumbnail images
