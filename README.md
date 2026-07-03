@@ -333,3 +333,7 @@ Built with Node.js and Google Gemini AI · Not deployed to production
 Designed to demonstrate LLM integration and API resilience patterns
 
 </div>
+
+
+## Changelog
+- **[#31]** Add fallback placeholder for missing product thumbnail images
