@@ -336,5 +336,6 @@ Designed to demonstrate LLM integration and API resilience patterns
 
 
 ## Changelog
+- **[#35]** Add product indexing optimizations on MongoDB schema
 - **[#33]** Add try-catch error boundary wrapping Gemini pricing analysis
 - **[#31]** Add fallback placeholder for missing product thumbnail images
