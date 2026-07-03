@@ -336,6 +336,7 @@ Designed to demonstrate LLM integration and API resilience patterns
 
 
 ## Changelog
+- **[#39]** Update default documentation port reference in README
 - **[#37]** Allow sorting competitor lists by price in dashboards
 - **[#35]** Add product indexing optimizations on MongoDB schema
 - **[#33]** Add try-catch error boundary wrapping Gemini pricing analysis
