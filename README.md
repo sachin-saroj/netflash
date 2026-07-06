@@ -336,6 +336,7 @@ Designed to demonstrate LLM integration and API resilience patterns
 
 
 ## Changelog
+- **[#67]** Optimize fonts loading performance (14)
 - **[#65]** Document security access control policies (13)
 - **[#63]** Format log output structures (12)
 - **[#61]** Improve button hover micro-interactions (11)
