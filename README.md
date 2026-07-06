@@ -336,6 +336,7 @@ Designed to demonstrate LLM integration and API resilience patterns
 
 
 ## Changelog
+- **[#65]** Document security access control policies (13)
 - **[#63]** Format log output structures (12)
 - **[#61]** Improve button hover micro-interactions (11)
 - **[#59]** Enhance validation checks for settings routing (10)
