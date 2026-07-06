@@ -336,6 +336,7 @@ Designed to demonstrate LLM integration and API resilience patterns
 
 
 ## Changelog
+- **[#43]** Refactor error alerts to use inline visual banners (2)
 - **[#41]** Fix console warning in chart rendering (1)
 - **[#39]** Update default documentation port reference in README
 - **[#37]** Allow sorting competitor lists by price in dashboards
