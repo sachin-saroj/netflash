@@ -336,6 +336,7 @@ Designed to demonstrate LLM integration and API resilience patterns
 
 
 ## Changelog
+- **[#47]** Improve timeout handling for api queries (4)
 - **[#45]** Add performance telemetry logs (3)
 - **[#43]** Refactor error alerts to use inline visual banners (2)
 - **[#41]** Fix console warning in chart rendering (1)
