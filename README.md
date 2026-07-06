@@ -336,6 +336,7 @@ Designed to demonstrate LLM integration and API resilience patterns
 
 
 ## Changelog
+- **[#69]** Resolve potential memory leak in listener callbacks (15)
 - **[#67]** Optimize fonts loading performance (14)
 - **[#65]** Document security access control policies (13)
 - **[#63]** Format log output structures (12)
