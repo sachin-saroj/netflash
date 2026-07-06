@@ -336,6 +336,7 @@ Designed to demonstrate LLM integration and API resilience patterns
 
 
 ## Changelog
+- **[#59]** Enhance validation checks for settings routing (10)
 - **[#57]** Fix spelling typos in documentation (9)
 - **[#55]** Configure standard environment variables example (8)
 - **[#53]** Document Docker container layout setup (7)
