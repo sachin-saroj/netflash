@@ -336,6 +336,7 @@ Designed to demonstrate LLM integration and API resilience patterns
 
 
 ## Changelog
+- **[#55]** Configure standard environment variables example (8)
 - **[#53]** Document Docker container layout setup (7)
 - **[#51]** Optimize index search fields in schema (6)
 - **[#49]** Add test assertions for categorizations logic (5)
