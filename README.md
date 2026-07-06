@@ -336,6 +336,7 @@ Designed to demonstrate LLM integration and API resilience patterns
 
 
 ## Changelog
+- **[#53]** Document Docker container layout setup (7)
 - **[#51]** Optimize index search fields in schema (6)
 - **[#49]** Add test assertions for categorizations logic (5)
 - **[#47]** Improve timeout handling for api queries (4)
